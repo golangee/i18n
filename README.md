@@ -102,7 +102,7 @@ after invoking geni8n a *values.go* is generated
   type ValuesDeDE struct{}
   // ...
   
-  // Values if the common contract valid for all translations
+  // Values is the common contract valid for all translations
   type Values interface{
     // AppName returns the language independent value for app_name
     AppName() string
