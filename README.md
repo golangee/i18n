@@ -29,6 +29,104 @@ Apply generator (everything set manually)
 geni8n -dir /my/project/dir -targetLang=go -targetArch=default -fallback=en-US
 ```
 
+# generated code examples
+
+you write *values-en-US.xml*
+```xml
+<resources>
+    <string name="app_name" translatable="false">EasyApp</string>
+    <string name="action_settings">Settings</string>
+    <string-array name="selector_details_array">
+       <item>first line</item>
+       <item>second line</item>
+       <item>third line</item>
+       <item>fourth line</item>
+    </string-array>
+    <plurals name="test0">
+        <item quantity="one">Test ok</item>
+        <item quantity="other">Tests ok</item>
+    </plurals>
+    <plurals name="test1">
+        <item quantity="one">%d test ok</item>
+        <item quantity="other">%d tests ok</item>
+    </plurals>
+  
+</resources>
+```
+
+after invoking geni8n a *values.go* is generated
+```go
+
+  // ValuesEnUS is the generated version of the file values-en-US.xml
+  type ValuesEnUS struct{}
+  
+  // AppName returns the language independent value for app_name
+  func (v ValuesEnUS) AppName() string{
+     return "EasyApp"
+  }
+  
+  // ActionSettings returns the value of action_settings for en-US
+  func (v ValuesEnUS) ActionSettings() string{
+     return "Settings"
+  }
+  
+  // SelectorDetailsArray returns the value of selector_details_array for en-US
+  func (v ValuesEnUS) SelectorDetailsArray() []string{
+     return []string{"first line","second line","third line","fourth line"}
+  }
+  
+  // Test0 returns the value of test0 for en-US
+  func (v ValuesEnUS) Test0(quantity int) string{
+    switch quantity{
+      case 0:
+        return return "Test ok"
+      default:
+        return return "Tests ok"
+    }
+  }
+  
+  // Test1 returns the value of test1 for en-US
+  func (v ValuesEnUS) Test1(quantity int, param0 int) string{
+    switch quantity{
+      case 0:
+        return return fmt.Sprintf("%d test ok", param0)
+      default:
+        return return fmt.Sprintf("%d tests ok", param1)
+    }
+  }
+  
+  //let the compiler check type safety
+  var _ Values = (ValuesDeDE)(nil)
+  
+  // ValuesDeDE is the generated version of the file values-de-DE.xml
+  type ValuesDeDE struct{}
+  // ...
+  
+  // Values if the common contract valid for all translations
+  type Values interface{
+    // AppName returns the language independent value for app_name
+    AppName() string
+    
+    // ActionSettings returns the localized value of action_settings
+    ActionSettings() string
+    
+    // ...
+  }
+  
+  // LocalizationOf returns the resolved and localized Values type or a fallback and is never nil.
+  func LocalizationOf(locale string) Values {
+    switch locale{
+      case "de-DE":
+        return ValuesDeDE
+      case strings.Contains(locale,"de-"):
+        return ValuesDeDE
+      default:
+        return ValuesEnUS
+    }
+  }
+  
+```
+
 # roadmap
 
 ## Version 1.0.0
