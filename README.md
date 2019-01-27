@@ -117,11 +117,11 @@ after invoking geni8n a *values.go* is generated
   func LocalizationOf(locale string) Values {
     switch locale{
       case "de-DE":
-        return ValuesDeDE
+        return ValuesDeDE{}
       case strings.Contains(locale,"de-"):
-        return ValuesDeDE
+        return ValuesDeDE{}
       default:
-        return ValuesEnUS
+        return ValuesEnUS{}
     }
   }
   
