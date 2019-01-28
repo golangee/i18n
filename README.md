@@ -1,4 +1,4 @@
-# geni8n
+# geni18n
 A go (golang) generator which creates code based and type safe translation units.
 
 # goals and design decisions
@@ -14,19 +14,19 @@ Even if the tool is written in Go and will firstly support only a generator for 
 Installation (*note: do not call this in your project with go.mod, to avoid inclusion as unneeded dependency*)  
 ```bash
 cd /not/my/module/but/go/path/or/bin
-go get github.com/worldiety/geni8n
+go get github.com/worldiety/geni18n
 # add resulting binary into your path
 ```
 
 Apply generator (everything with automatic detection)  
 ```bash
 cd /my/project/dir
-geni8n
+geni18n
 ```
 
 Apply generator (everything set manually)
 ```bash
-geni8n -dir /my/project/dir -targetLang=go -targetArch=default -fallback=en-US
+geni18n -dir /my/project/dir -targetLang=go -targetArch=default -fallback=en-US
 ```
 
 # generated code examples
@@ -54,7 +54,7 @@ you write *values-en-US.xml*
 </resources>
 ```
 
-after invoking geni8n a *values.go* is generated
+after invoking geni18n a *values.go* is generated
 ```go
 
   // ValuesEnUS is the generated version of the file values-en-US.xml
