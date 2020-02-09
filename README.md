@@ -1,13 +1,42 @@
-# geni18n
+# i18n ![wip](https://img.shields.io/badge/-work%20in%20progress-red) ![draft](https://img.shields.io/badge/-draft-red)
+
 A go (golang) generator which creates code based and type safe translation units.
 
-# goals and design decisions
-Most translation tools are simply libraries and fall entirely short when it comes to typesafety. This can only be avoided by one of the following two approaches:
+## related work
+Popular existing libraries are [go-18n](https://github.com/nicksnyder/go-i18n) or 
+[i18n4go](https://github.com/maximilien/i18n4go). There is also a pending localization 
+[proposal](https://go.googlesource.com/proposal/+/master/design/12750-localization.md). 
 
-  1. create a linter which runs before any compilation and proofs that whatever text based solution you use, you have consistent translations (e.g. a translation for each key, equal placeholders and plurals for each key) and that you use the keys and formatting methods corectly and consistently (e.g. correct sprintf directives for correct types) OR
-  1. create a generator which creates source code from your text based translation configuration and solve all the hassle using simply the type system of your programming language. Even if your language does not provide type safety, the generator can also provide the role of a linter.
+## goals and design decisions
+The known tools are at their core simple libraries and fall entirely short when it comes to typesafety. 
+This can only be avoided by one of the following two approaches:
+
+  1. create a linter which runs before any compilation and proofs that whatever text based solution you 
+  use, you have consistent translations (e.g. a translation for each key, equal placeholders and plurals 
+  for each key) and that you use the keys and formatting methods corectly and consistently (e.g. correct 
+  sprintf directives for correct types) OR
+  1. create a generator which creates source code from your text based translation configuration and 
+  solve all the hassle using simply the type system of your programming language. Even if your language 
+  does not provide type safety, the generator can also provide the role of a linter.
+
+The following descision are made
+  1. A new tool should support go modules and go packages. Instead of writing the code first, we assume that it is 
+  equally fine or better to write a default translation first, to ensure that you have always a valid text at your hand.
+  1. Every access should only be made by type safe accessors, which provides type safe parameters for ordered 
+  placeholders and pluralization.
+  1. A good encapsulation strategy requires to put related things together, sometimes just on module level but in larger
+  projects also per package level. So this applies also to translations, which may be scattered across packages to fit
+  best to your divide and conquer strategy.
+  1. However, scattering translation files wildly accross a module, or even worse, accross modules of modules, is probably not
+  desirable for your translation (agency) process and perhaps not feasible at all, because you may be out of control of
+  some modules.
+  1. The conclusion is to have a single state of truth at the top of your root module, which aggregates and merges
+  all translations together and is also the truth for the generated type safe accessors.
+  1. A statically proofed translation cannot be guaranteed, if the values can be overriden after generation
+  time. So there should be also a runtime checker at startup, because the trade of for a slower start is better than
+  a malfunction or crash of your productive service.
   
-Even if the tool is written in Go and will firstly support only a generator for it, it is not limited to that ecosystem. The tool will support multiple input formats and intentionally generates the code side by side with your translation file. This kind of fragmentation is intentional, to support the developer in encapsulation and his divide and conquer strategy. If a developer has chosen to have a central app-wide translation (which is generally a bad practice when it comes to reusing modules AND translations), he can still do so. This will also ensure that a localization does not introduce an unwanted dependency.
+
 
 # usage
 
