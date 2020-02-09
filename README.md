@@ -37,11 +37,11 @@ The following decisions have been discussed
   time. So there should be also a runtime checker at startup, because the trade of for a slower start is better than
   a malfunction or crash of your productive service.
   1. The value of introducing a central dependency to a translation dictionary is better than to expect that a developer
-  is aware of registering each translatable package from unknown modules by hand.
+  is aware of registering each translatable package from unknown modules by hand. This can only be accomplished 
+  with a singleton.
   1. The supported file format must be a well known format, so that common translation software used by agencies
   can simply import and export them (see also for example available SDL Trados
-  [file formats](https://docs.sdl.com/LiveContent/content/en-US/SDL%20Passolo-v1/GUID-93FC4141-8209-40A0-B2D6-6E2B8B471D1F#addHistory=true&filename=GUID-AE8DADC4-AE34-4E32-BEAC-F23586BA1DAE.xml&docid=GUID-B2D20814-5CFC-464E-9696-2A19261C0589&inner_id=&tid=&query=&scope=&resource=&toc=false&eventType=lcContent.loadDocGUID-B2D20814-5CFC-464E-9696-2A19261C0589)
-  ). Obviously a custom JSON or even TOML format is usually a bad choice.
+  [file formats](https://docs.sdl.com/LiveContent/content/en-US/SDL%20Passolo-v1/GUID-93FC4141-8209-40A0-B2D6-6E2B8B471D1F#addHistory=true&filename=GUID-AE8DADC4-AE34-4E32-BEAC-F23586BA1DAE.xml&docid=GUID-B2D20814-5CFC-464E-9696-2A19261C0589&inner_id=&tid=&query=&scope=&resource=&toc=false&eventType=lcContent.loadDocGUID-B2D20814-5CFC-464E-9696-2A19261C0589)). Obviously a custom JSON or even TOML format is usually a bad choice.
   
   
   
@@ -105,15 +105,21 @@ package myusecase
 
 import "github.com/worldiety/i18n" 
 
+
+func init(){
+    // add default values, may be overloaded any time later. This is a singleton, see discussion above.
+    i18n.Add(i18n.Text{ID:"hello_world", Locale: "en-US", Comment: "HelloWorld returns the text for saying hello world"})
+    // ...
+}
 // Strings is a type safe wrapper around i8n resources
 type Strings struct {
-   db *i8n.Strings
+    db *i18n.Resources
 }
 
 // NewStrings returns a type safe wrapper around an i8n database
-func NewStrings(db *i8n.Strings)Strings{
+func NewStrings(locale string)Strings{
     // tbd validation
-    return Strings{db}
+    return Strings{i18n.For(locale)}
 } 
 
  // HelloWorld returns the text for saying hello world
@@ -132,8 +138,8 @@ func (s Strings) XRunsAroundYAndSingsZ(x,y,z string) string{
 }
 
    // XHasYCats returns an interpolated and pluralized sentence.
-func (s Strings) XHasYCats(x string, y int) string{
-       return s.db.Text("x_has_y_cats", x, y)
+func (s Strings) XHasYCats(quantity int, x string, y int) string{
+       return s.db.PluralText(quantity, "x_has_y_cats", x, y)
 }
    
    
