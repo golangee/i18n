@@ -1,4 +1,4 @@
-# i18n ![wip](https://img.shields.io/badge/-work%20in%20progress-red) ![draft](https://img.shields.io/badge/-draft-red) [![Travis-CI](https://travis-ci.com/worldiety/i18n.svg?branch=master)](https://travis-ci.com/worldiety/i18n) [![Go Report Card](https://goreportcard.com/badge/github.com/worldiety/i18n)](https://goreportcard.com/report/github.com/worldiety/i18n) [![GoDoc](https://godoc.org/github.com/worldiety/i18n?status.svg)](http://godoc.org/github.com/worldiety/i18n)
+# i18n ![wip](https://img.shields.io/badge/-work%20in%20progress-red) ![draft](https://img.shields.io/badge/-draft-red) [![Travis-CI](https://travis-ci.com/worldiety/geni8n.svg?branch=master)](https://travis-ci.com/worldiety/geni8n) [![Go Report Card](https://goreportcard.com/badge/github.com/worldiety/i18n)](https://goreportcard.com/report/github.com/worldiety/i18n) [![GoDoc](https://godoc.org/github.com/worldiety/i18n?status.svg)](http://godoc.org/github.com/worldiety/i18n)
 
 
 A library (ready) and a go (golang) generator (wip) which creates code based and type safe translation units.
@@ -19,7 +19,7 @@ A library (ready) and a go (golang) generator (wip) which creates code based and
 
 1. use the [Android XML Format](https://developer.android.com/guide/topics/resources/string-resource).
 1. import the i18n dependency `go get github.com/worldiety/i18n` in your module.
-1. configure and usage is as easy as this
+1. configuration and usage is as easy as this
     ```go
         package main
    
