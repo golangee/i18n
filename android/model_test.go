@@ -12,18 +12,24 @@ func TestTranslate(t *testing.T) {
 	}
 
 	fmt.Printf("%+v\n", res)
+}
 
-	bad0 := `\@ \? < & ' " \" \'`
-	good0 := `@ ? < & ' " " '`
-
-	if Decode(bad0) != good0 {
-		t.Fatalf("expected %s but got %s", good0, Decode(bad0))
+func TestDecode(t *testing.T) {
+	tests := []struct {
+		name string
+		args string
+		want string
+	}{
+		{"special chars escape", `\@ \? < & ' " \" \'`, `@ ? < & ' " " '`},
+		{"special chars full escape", `"hello '"`, `hello '`},
+		{"conversion with indices", `hello %%1$s %s %2$d %3$s`, `hello %%1$s %s %[2]d %[3]s`},
 	}
-
-	bad1 := `"hello '"`
-	good1 := `hello '`
-
-	if Decode(bad1) != good1 {
-		t.Fatalf("expected %s but got %s", good1, Decode(bad1))
+	// nolint: scopelint // tt is a value, so this is a false-positive
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Decode(tt.args); got != tt.want {
+				t.Errorf("Decode() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

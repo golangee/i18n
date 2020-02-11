@@ -69,7 +69,7 @@ type Plurals struct {
 	Items   []PluralItem `xml:"item"`
 }
 
-// PluralItem is the quantified message
+// PluralItem is the grammatically quantified message
 type PluralItem struct {
 	XMLName  xml.Name `xml:"item"`
 	Quantity string   `xml:"quantity,attr"`
@@ -127,6 +127,40 @@ func Decode(androidStr string) string {
 
 	// detect %1$s and %2$d types of indices
 	// there are a lot of them https://developer.android.com/reference/java/util/Formatter
-	//TODO
+	sb := &strings.Builder{}
+
+	for i := 0; i < len(androidStr)-1; i++ {
+		b := androidStr[i]
+		sb.WriteByte(b)
+
+		next := androidStr[i+1]
+		// ignore double escape
+		if b == '%' && next == '%' {
+			sb.WriteByte(next)
+			i++
+
+			continue
+		}
+
+		// we are at the beginning of a formatting directive
+		if b == '%' {
+			// this means, that we have a position and we have enough look-ahead (at least num+$+conversion).
+			// We ignore 9+ indices. This implementation is incomplete anyway, but probably catches 80%.
+			if next >= '0' && next <= '9' && i < len(androidStr)-3 && androidStr[i+2] == '$' {
+				sb.WriteByte('[')
+				sb.WriteByte(next)
+				sb.WriteByte(']')
+
+				i += 2
+			}
+		}
+	}
+
+	if len(androidStr) > 0 {
+		sb.WriteByte(androidStr[len(androidStr)-1])
+	}
+
+	androidStr = sb.String()
+
 	return androidStr
 }

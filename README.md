@@ -1,6 +1,46 @@
-# i18n ![wip](https://img.shields.io/badge/-work%20in%20progress-red) ![draft](https://img.shields.io/badge/-draft-red)
+# i18n ![wip](https://img.shields.io/badge/-work%20in%20progress-red) ![draft](https://img.shields.io/badge/-draft-red) [![Travis-CI](https://travis-ci.com/worldiety/i18n.svg?branch=master)](https://travis-ci.com/worldiety/i18n) [![Go Report Card](https://goreportcard.com/badge/github.com/worldiety/i18n)](https://goreportcard.com/report/github.com/worldiety/i18n) [![GoDoc](https://godoc.org/github.com/worldiety/i18n?status.svg)](http://godoc.org/github.com/worldiety/i18n)
 
-A go (golang) generator which creates code based and type safe translation units.
+
+A library (ready) and a go (golang) generator (wip) which creates code based and type safe translation units.
+
+## milestones and road map
+
+- [x] Android xml support
+- [x] CLDR plural support
+- [x] CLDR language tag support
+- [x] support priority matching of wanted locales and available locales
+- [ ] dynamic fallthrough resources, if strings are missing
+- [ ] compile time checker for kind of value and placeholders
+- [ ] runtime checker for kind of value and placeholders
+- [ ] runtime checker for consistent placeholders across translations
+- [ ] type safe generator for accessor facade
+
+## library usage
+
+1. use the [Android XML Format](https://developer.android.com/guide/topics/resources/string-resource).
+1. import the i18n dependency `go get github.com/worldiety/i18n` in your module.
+1. configure and usage is as easy as this
+    ```go
+        package main
+   
+        import "github.com/worldiety/i18n"
+   
+        func main(){
+           err := i18n.ImportFile(i18n.AndroidImporter{}, "en-US", "usecase/strings.xml")
+           if err != nil {
+              panic(err)
+           }
+   
+           res := i18n.From("de-DE")   
+   
+           str, err := res.QuantityText("x_has_y_cats2", 1, "nick", 1)
+           if err != nil {
+              panic(err)
+           }
+           
+           fmt.Println(str)
+        }   
+    ```
 
 ## related work
 Popular existing libraries are [go-18n](https://github.com/nicksnyder/go-i18n) or 
@@ -45,13 +85,9 @@ The following decisions have been discussed
   
   
   
-## milestones
 
-- [ ] Android xml support
-- [ ] interface first, reflection based runtime loader and checker
-- [ ] code generator and compile time checker
 
-## usage
+## go generate usage
 
 1. use the [Android XML Format](https://developer.android.com/guide/topics/resources/string-resource).
  In contrast to the specification, the file name is important and must be prefixed with *strings-* and postfixed with
@@ -62,18 +98,32 @@ The following decisions have been discussed
         <string name="app_name" translatable="false">EasyApp</string>
         <string name="hello_world">Hello World</string>
         <string name="hello_x">Hello %s</string>
-        <string name="x_runs_around_Y_and_sings_z">%1s runs around the %2s and sings %3s</string>
+        <string name="x_runs_around_Y_and_sings_z">%1s runs around the %2$s and sings %3$s</string>
         <plurals name="x_has_y_cats">
-            <item quantity="one">%1s has %2d cat</item>
-            <item quantity="other">the owner of %2d cats is %1s</item>
+            <item quantity="one">%1$s has %2$d cat</item>
+            <item quantity="other">the owner of %2$d cats is %1$s</item>
         </plurals>
         <string-array name="selector_details_array">
-           <item>first line</item>
-           <item>second line</item>
-           <item>third line</item>
-           <item>fourth line</item>
+            <item>first line</item>
+            <item>second line</item>
+            <item>third line</item>
+            <item>fourth line</item>
         </string-array>
-      
+    
+        <plurals name="x_has_y_cats2">
+            <item quantity="one">%1$s has %2$d cat2</item>
+            <item quantity="other">the owner of %2$d cats2 is %1$s</item>
+        </plurals>
+    
+        <string-array name="selector_details_array2">
+            <item>a</item>
+            <item>b</item>
+            <item>c</item>
+            <item>d</item>
+        </string-array>
+    
+        <string name="bad_0">\@ \? &lt; &amp; &apos; &quot; \" \'</string>
+        <string name="bad_1">"hello '"</string>
     </resources>
     ```
 1. import the i18n dependency `go get github.com/worldiety/i18n` in your module.
