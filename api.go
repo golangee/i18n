@@ -39,6 +39,16 @@ func ImportFile(importer Importer, locale string, fname string) error {
 	return Import(importer, locale, file)
 }
 
+// ImportValues adds or replaces any existing value
+func ImportValue(value Value) {
+	res := allResources.Configure(value.Locale())
+	value.updateTag(res.tag)
+	res.mutex.Lock()
+	defer res.mutex.Unlock()
+
+	res.values[value.ID()] = value
+}
+
 // From returns the best matching text Resources to the given set of matching locales
 func From(locales ...string) *Resources {
 	return allResources.Match(locales...)

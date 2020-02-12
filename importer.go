@@ -47,32 +47,33 @@ func importAndroid(dst *Resources, src android.Resources) {
 
 	for _, str := range src.Strings {
 		dst.values[str.Name] = simpleValue{
-			ID:     str.Name,
+			Id:     str.Name,
 			String: android.Decode(str.Text),
 		}
 	}
 
 	for _, pl := range src.Plurals {
 		val := pluralValue{
-			ID: pl.Name,
+			Id: pl.Name,
+			tag:dst.tag,
 		}
 
 		for _, item := range pl.Items {
 			switch strings.ToLower(item.Quantity) {
 			case zero:
-				val.Zero = android.Decode(item.Text)
+				val.zero = android.Decode(item.Text)
 			case one:
-				val.One = android.Decode(item.Text)
+				val.one = android.Decode(item.Text)
 			case two:
-				val.Two = android.Decode(item.Text)
+				val.two = android.Decode(item.Text)
 			case few:
-				val.Few = android.Decode(item.Text)
+				val.few = android.Decode(item.Text)
 			case many:
-				val.Many = android.Decode(item.Text)
+				val.many = android.Decode(item.Text)
 			case other:
 				fallthrough
 			default:
-				val.Other = android.Decode(item.Text)
+				val.other = android.Decode(item.Text)
 			}
 		}
 
@@ -86,7 +87,7 @@ func importAndroid(dst *Resources, src android.Resources) {
 		}
 
 		dst.values[arr.Name] = arrayValue{
-			ID:      arr.Name,
+			Id:      arr.Name,
 			Strings: tmp,
 		}
 	}

@@ -9,16 +9,17 @@ import (
 // Resources is a type for accessing an applications text resources. It is safe to use concurrently.
 type Resources struct {
 	tag    language.Tag
-	values map[string]value
+	values map[string]Value
 	mutex  sync.RWMutex
 }
 
 func newResources(tag language.Tag) *Resources {
 	return &Resources{
 		tag:    tag,
-		values: make(map[string]value),
+		values: make(map[string]Value),
 	}
 }
+
 
 // TextArray returns a defensive copy of the according string array
 // or ErrTextNotFound.
@@ -57,5 +58,5 @@ func (l *Resources) QuantityText(id string, quantity int, args ...interface{}) (
 		return "", ErrTextNotFound
 	}
 
-	return value.QuantityText(l.tag, quantity, args...)
+	return value.QuantityText(quantity, args...)
 }

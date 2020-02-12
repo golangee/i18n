@@ -3,68 +3,173 @@ package i18n
 // nolint: goimports // the linter is broken
 import (
 	"fmt"
+	"github.com/dave/jennifer/jen"
 	"golang.org/x/text/feature/plural"
 	"golang.org/x/text/language"
 )
 
-// a value is a contract which is implemented by each kind of message value, like simple, array or plural.
-type value interface {
+// A Value is a contract which is implemented by each kind of message Value, like simple, array or plural.
+type Value interface {
+	ID() string
+
+	// TextArray returns the backing strings array
 	TextArray() ([]string, error)
 
+	// Text formats the value with the given arguments
 	Text(args ...interface{}) (string, error)
 
-	QuantityText(tag language.Tag, quantity int, args ...interface{}) (string, error)
+	// QuantityText formats the value with the given arguments
+	QuantityText(quantity int, args ...interface{}) (string, error)
+
+	// Locale returns the CLDR language tag
+	Locale() string
+	emitter
+
+	// implementation detail
+	updateTag(tag language.Tag)
 }
 
-// A pluralValue is value with CLDR plural rules, see also
+type emitter interface {
+	emit(group *jen.Group)
+}
+
+type PluralBuilder interface {
+	Value
+	Zero(text string) PluralBuilder
+	One(text string) PluralBuilder
+	Two(text string) PluralBuilder
+	Few(text string) PluralBuilder
+	Many(text string) PluralBuilder
+	Other(text string) PluralBuilder
+}
+
+// A pluralValue is Value with CLDR plural rules, see also
 // https://unicode.org/reports/tr35/tr35-numbers.html#Language_Plural_Rules
 type pluralValue struct {
-	ID    string
-	Zero  string
-	One   string
-	Two   string
-	Few   string
-	Many  string
-	Other string
+	locale string
+	Id     string
+	zero   string
+	one    string
+	two    string
+	few    string
+	many   string
+	other  string
+	tag    language.Tag
 }
 
-// StringArray returns the Other value within a one element array
+func NewQuantityText(locale string, id string) PluralBuilder {
+	return pluralValue{
+		locale: locale,
+		Id:     id,
+	}
+}
+func (p pluralValue) Zero(text string) PluralBuilder {
+	p.zero = text
+	return p
+}
+
+func (p pluralValue) One(text string) PluralBuilder {
+	p.one = text
+	return p
+}
+
+func (p pluralValue) Two(text string) PluralBuilder {
+	p.two = text
+	return p
+}
+
+func (p pluralValue) Few(text string) PluralBuilder {
+	p.few = text
+	return p
+}
+
+func (p pluralValue) Many(text string) PluralBuilder {
+	p.many = text
+	return p
+}
+
+func (p pluralValue) Other(text string) PluralBuilder {
+	p.other = text
+	return p
+}
+
+func (p pluralValue) Locale() string {
+	return p.locale
+}
+
+func (p pluralValue) updateTag(tag language.Tag) {
+	p.tag = tag
+}
+
+func (p pluralValue) emit(group *jen.Group) {
+	call := jen.Qual("github.com/worldiety/i18n", "NewQuantityText").Params(jen.Id("tag"), jen.Lit(p.Id))
+	if len(p.zero) > 0 {
+		call = call.Dot("Zero").Params(jen.Lit(p.zero))
+	}
+
+	if len(p.one) > 0 {
+		call = call.Dot("One").Params(jen.Lit(p.one))
+	}
+	if len(p.two) > 0 {
+		call = call.Dot("Two").Params(jen.Lit(p.two))
+	}
+	if len(p.few) > 0 {
+		call = call.Dot("Few").Params(jen.Lit(p.few))
+	}
+	if len(p.many) > 0 {
+		call = call.Dot("Many").Params(jen.Lit(p.many))
+	}
+	if len(p.other) > 0 {
+		call = call.Dot("Other").Params(jen.Lit(p.other))
+	}
+	if len(p.other) > 0 {
+		call = call.Dot("Other").Params(jen.Lit(p.other))
+	}
+
+	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
+}
+
+func (p pluralValue) ID() string {
+	return p.Id
+}
+
+// StringArray returns the Other Value within a one element array
 func (p pluralValue) TextArray() ([]string, error) {
-	return []string{p.Other}, nil
+	return []string{p.other}, nil
 }
 
 // String returns other
 func (p pluralValue) Text(args ...interface{}) (string, error) {
-	return fmt.Sprintf(p.Other, args...), nil
+	return fmt.Sprintf(p.other, args...), nil
 }
 
 // QuantityString returns the grammatical plural for the internal Plural implementation
-func (p pluralValue) QuantityText(tag language.Tag, quantity int, args ...interface{}) (string, error) {
+func (p pluralValue) QuantityText(quantity int, args ...interface{}) (string, error) {
 	// MatchPlural is over engineered: f and t are not used anyway and according to its test, v and w must be kept 0
 	// to just get the plural for a natural number
-	form := plural.Cardinal.MatchPlural(tag, quantity, 0, 0, 0, 0)
+	form := plural.Cardinal.MatchPlural(p.tag, quantity, 0, 0, 0, 0)
 	switch form {
 	case plural.Zero:
-		return p.fallback(p.Zero, args...)
+		return p.fallback(p.zero, args...)
 	case plural.One:
-		return p.fallback(p.One, args...)
+		return p.fallback(p.one, args...)
 	case plural.Two:
-		return p.fallback(p.Two, args...)
+		return p.fallback(p.two, args...)
 	case plural.Few:
-		return p.fallback(p.Few, args...)
+		return p.fallback(p.few, args...)
 	case plural.Many:
-		return p.fallback(p.Many, args...)
+		return p.fallback(p.many, args...)
 	case plural.Other:
 		fallthrough
 	default:
-		return fmt.Sprintf(p.Other, args...), nil
+		return fmt.Sprintf(p.other, args...), nil
 	}
 }
 
 // fallback uses Other if text is empty
 func (p pluralValue) fallback(text string, args ...interface{}) (string, error) {
 	if len(text) == 0 {
-		return fmt.Sprintf(p.Other, args...), nil
+		return fmt.Sprintf(p.other, args...), nil
 	}
 
 	return fmt.Sprintf(text, args...), nil
@@ -72,8 +177,35 @@ func (p pluralValue) fallback(text string, args ...interface{}) (string, error) 
 
 // A simpleValue just holds a text
 type simpleValue struct {
-	ID     string
+	locale string
+	Id     string
 	String string
+}
+
+// NewText returns a
+func NewText(locale string, id string, text string) Value {
+	return simpleValue{
+		locale: locale,
+		Id:     id,
+		String: text,
+	}
+}
+
+func (s simpleValue) emit(group *jen.Group) {
+	call := jen.Qual("github.com/worldiety/i18n", "NewText").Params(jen.Id("tag"), jen.Lit(s.Id), jen.Lit(s.String))
+	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
+}
+
+func (s simpleValue) ID() string {
+	return s.Id
+}
+
+func (s simpleValue) Locale() string {
+	return s.locale
+}
+
+func (s simpleValue) updateTag(tag language.Tag) {
+
 }
 
 // StringArray returns the text in a single element array
@@ -87,14 +219,46 @@ func (s simpleValue) Text(args ...interface{}) (string, error) {
 }
 
 // QuantityString is equivalent to String
-func (s simpleValue) QuantityText(tag language.Tag, quantity int, args ...interface{}) (string, error) {
+func (s simpleValue) QuantityText(quantity int, args ...interface{}) (string, error) {
 	return s.Text(args...)
 }
 
 // An arrayValue holds an ordered bunch of strings
 type arrayValue struct {
-	ID      string
+	locale  string
+	Id      string
 	Strings []string
+}
+
+// NewTextArray creates a new translated array value
+func NewTextArray(locale string, id string, items ...string) Value {
+	return arrayValue{
+		locale:  locale,
+		Id:      id,
+		Strings: items,
+	}
+}
+
+func (a arrayValue) updateTag(tag language.Tag) {
+
+}
+
+func (a arrayValue) Locale() string {
+	return a.locale
+}
+
+func (a arrayValue) emit(group *jen.Group) {
+	varArgs := jen.ListFunc(func(group *jen.Group) {
+		for _, s := range a.Strings {
+			group.Lit(s)
+		}
+	})
+	call := jen.Qual("github.com/worldiety/i18n", "NewTextArray").Params(jen.Id("tag"), jen.Lit(a.Id), varArgs)
+	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
+}
+
+func (a arrayValue) ID() string {
+	return a.Id
 }
 
 // TextArray returns a defensive copy
@@ -115,6 +279,6 @@ func (a arrayValue) Text(args ...interface{}) (string, error) {
 }
 
 // QuantityText just returns text
-func (a arrayValue) QuantityText(tag language.Tag, quantity int, args ...interface{}) (string, error) {
+func (a arrayValue) QuantityText(quantity int, args ...interface{}) (string, error) {
 	return a.Text(args...)
 }
