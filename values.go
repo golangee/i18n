@@ -23,14 +23,12 @@ type Value interface {
 
 	// Locale returns the CLDR language tag
 	Locale() string
-	emitter
+	goEmitImportValue(group *jen.Group)
+	goEmitGetter()*jen.Statement
+	exampleText() string
 
 	// implementation detail
 	updateTag(tag language.Tag)
-}
-
-type emitter interface {
-	emit(group *jen.Group)
 }
 
 type PluralBuilder interface {
@@ -101,34 +99,6 @@ func (p pluralValue) updateTag(tag language.Tag) {
 	p.tag = tag
 }
 
-func (p pluralValue) emit(group *jen.Group) {
-	call := jen.Qual("github.com/worldiety/i18n", "NewQuantityText").Params(jen.Id("tag"), jen.Lit(p.Id))
-	if len(p.zero) > 0 {
-		call = call.Dot("Zero").Params(jen.Lit(p.zero))
-	}
-
-	if len(p.one) > 0 {
-		call = call.Dot("One").Params(jen.Lit(p.one))
-	}
-	if len(p.two) > 0 {
-		call = call.Dot("Two").Params(jen.Lit(p.two))
-	}
-	if len(p.few) > 0 {
-		call = call.Dot("Few").Params(jen.Lit(p.few))
-	}
-	if len(p.many) > 0 {
-		call = call.Dot("Many").Params(jen.Lit(p.many))
-	}
-	if len(p.other) > 0 {
-		call = call.Dot("Other").Params(jen.Lit(p.other))
-	}
-	if len(p.other) > 0 {
-		call = call.Dot("Other").Params(jen.Lit(p.other))
-	}
-
-	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
-}
-
 func (p pluralValue) ID() string {
 	return p.Id
 }
@@ -191,11 +161,6 @@ func NewText(locale string, id string, text string) Value {
 	}
 }
 
-func (s simpleValue) emit(group *jen.Group) {
-	call := jen.Qual("github.com/worldiety/i18n", "NewText").Params(jen.Id("tag"), jen.Lit(s.Id), jen.Lit(s.String))
-	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
-}
-
 func (s simpleValue) ID() string {
 	return s.Id
 }
@@ -247,16 +212,6 @@ func (a arrayValue) Locale() string {
 	return a.locale
 }
 
-func (a arrayValue) emit(group *jen.Group) {
-	varArgs := jen.ListFunc(func(group *jen.Group) {
-		for _, s := range a.Strings {
-			group.Lit(s)
-		}
-	})
-	call := jen.Qual("github.com/worldiety/i18n", "NewTextArray").Params(jen.Id("tag"), jen.Lit(a.Id), varArgs)
-	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
-}
-
 func (a arrayValue) ID() string {
 	return a.Id
 }
@@ -282,3 +237,4 @@ func (a arrayValue) Text(args ...interface{}) (string, error) {
 func (a arrayValue) QuantityText(quantity int, args ...interface{}) (string, error) {
 	return a.Text(args...)
 }
+

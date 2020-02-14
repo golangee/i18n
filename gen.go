@@ -3,10 +3,13 @@ package i18n
 import (
 	"fmt"
 	. "github.com/dave/jennifer/jen"
+	"github.com/iancoleman/strcase"
 	"github.com/worldiety/tools"
 	"golang.org/x/text/language"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -36,15 +39,48 @@ func (t *packageTranslation) Emit() error {
 			group.Id("tag").Op("=").Lit(resFile.values.tag.String())
 			group.Line()
 			for _, val := range resFile.values.values {
-				val.emit(group)
+				val.goEmitImportValue(group)
 			}
 		}
 		group.Line()
 
 	})
 
+	file.Comment("Resources wraps the package strings to get invoked safely.")
+	file.Type().Id("Resources").Struct(Id("res").Op("*").Qual("github.com/worldiety/i18n", "Resources"))
+	file.Comment("NewResources creates a new localized resource instance.")
+	file.Func().Id("NewResources").Params(Id("locale").String()).Id("Resources").BlockFunc(func(group *Group) {
+		group.Return(Id("Resources").Op("{").Qual("github.com/worldiety/i18n", "From").Call(Id("locale"))).Op("}")
+	})
+	for _, value := range t.collectValues() {
+		file.Comment(strcase.ToCamel(value.ID()) + " returns a translated text for \"" + value.exampleText() + "\"")
+		file.Custom(Options{}, value.goEmitGetter())
+	}
+
 	fmt.Println(file.GoString())
 	return nil
+}
+
+// Returns all available values, aggregated across all translations. It does not perform a validation and uses
+// a random value per key. However the returned values are sorted by their id.
+func (t *packageTranslation) collectValues() []Value {
+	tmp := make(map[string]Value)
+	for _, file := range t.files {
+		for _, value := range file.values.values {
+			tmp[value.ID()] = value
+		}
+	}
+	keys := make([]string, 0, len(tmp))
+	for k := range tmp {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	res := make([]Value, 0, len(tmp))
+	for _, k := range keys {
+		res = append(res, tmp[k])
+	}
+	return res
 }
 
 type goGenerator struct {
@@ -117,4 +153,122 @@ func (g *goGenerator) Emit() error {
 		}
 	}
 	return nil
+}
+
+func (p pluralValue) goEmitGetter() *Statement {
+	params := ParsePrintf(p.other)
+	return Func().Params(Id("r").Id("Resources")).Id(strcase.ToCamel(p.ID())).ParamsFunc(func(group *Group) {
+		group.Id("quantity").Int()
+		emitParams(params, group)
+	}).String().BlockFunc(func(group *Group) {
+		group.Return(Id("r").Dot("QuantityText").ParamsFunc(func(group *Group) {
+			group.Lit(p.ID())
+			group.Id("quantity")
+			emitCallParams(params, group)
+		}))
+	})
+}
+
+func (p pluralValue) exampleText() string {
+	return p.other
+}
+
+func (p pluralValue) goEmitImportValue(group *Group) {
+	call := Qual("github.com/worldiety/i18n", "NewQuantityText").Params(Id("tag"), Lit(p.Id))
+	if len(p.zero) > 0 {
+		call = call.Dot("Zero").Params(Lit(p.zero))
+	}
+
+	if len(p.one) > 0 {
+		call = call.Dot("One").Params(Lit(p.one))
+	}
+	if len(p.two) > 0 {
+		call = call.Dot("Two").Params(Lit(p.two))
+	}
+	if len(p.few) > 0 {
+		call = call.Dot("Few").Params(Lit(p.few))
+	}
+	if len(p.many) > 0 {
+		call = call.Dot("Many").Params(Lit(p.many))
+	}
+	if len(p.other) > 0 {
+		call = call.Dot("Other").Params(Lit(p.other))
+	}
+	if len(p.other) > 0 {
+		call = call.Dot("Other").Params(Lit(p.other))
+	}
+
+	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
+}
+
+func emitParams(params []PrintfFormatSpecifier, group *Group) {
+	for i, p := range params {
+		switch p.Verb() {
+		case 'd':
+			group.Id("num" + strconv.Itoa(i)).Int()
+		case 'f':
+			group.Id("fl" + strconv.Itoa(i)).Float64()
+		case 's':
+			group.Id("str" + strconv.Itoa(i)).String()
+		default:
+			group.Id("val" + strconv.Itoa(i)).Interface()
+		}
+	}
+}
+
+func emitCallParams(params []PrintfFormatSpecifier, group *Group) {
+	for i, p := range params {
+		switch p.Verb() {
+		case 'd':
+			group.Id("num" + strconv.Itoa(i))
+		case 'f':
+			group.Id("fl" + strconv.Itoa(i))
+		case 's':
+			group.Id("str" + strconv.Itoa(i))
+		default:
+			group.Id("val" + strconv.Itoa(i))
+		}
+	}
+}
+
+func (s simpleValue) goEmitGetter() *Statement {
+	params := ParsePrintf(s.String)
+	return Func().Params(Id("r").Id("Resources")).Id(strcase.ToCamel(s.ID())).ParamsFunc(func(group *Group) {
+		emitParams(params, group)
+	}).String().BlockFunc(func(group *Group) {
+		group.Return(Id("r").Dot("Text").ParamsFunc(func(group *Group) {
+			group.Lit(s.ID())
+			emitCallParams(params, group)
+		}))
+	})
+}
+
+func (s simpleValue) exampleText() string {
+	return s.String
+}
+
+func (s simpleValue) goEmitImportValue(group *Group) {
+	call := Qual("github.com/worldiety/i18n", "NewText").Params(Id("tag"), Lit(s.Id), Lit(s.String))
+	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
+}
+
+func (a arrayValue) goEmitGetter() *Statement {
+	return Func().Params(Id("r").Id("Resources")).Id(strcase.ToCamel(a.ID())).Params().Op("[]").String().BlockFunc(func(group *Group) {
+		group.Return(Id("r").Dot("TextArray").Params(Lit(a.ID())))
+	})
+}
+
+func (a arrayValue) exampleText() string {
+	str, _ := a.Text()
+	return str
+}
+
+func (a arrayValue) goEmitImportValue(group *Group) {
+	varArgs := ListFunc(func(group *Group) {
+		for _, s := range a.Strings {
+			group.Lit(s)
+		}
+	})
+	call := Qual("github.com/worldiety/i18n", "NewTextArray").Params(Id("tag"), Lit(a.Id), varArgs)
+	group.Qual("github.com/worldiety/i18n", "ImportValue").Params(call)
 }

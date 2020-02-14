@@ -22,7 +22,7 @@ func TestDecode(t *testing.T) {
 	}{
 		{"special chars escape", `\@ \? < & ' " \" \'`, `@ ? < & ' " " '`},
 		{"special chars full escape", `"hello '"`, `hello '`},
-		{"conversion with indices", `hello %%1$s %s %2$d %3$s`, `hello %%1$s %s %[2]d %[3]s`},
+		{"conversion with indices", `hello %%1$s %s %2$d %13$s`, `hello %%1$s %s %[2]d %[13]s`},
 	}
 	// nolint: scopelint // tt is a value, so this is a false-positive
 	for _, tt := range tests {

@@ -45,3 +45,4 @@ func TestImport(t *testing.T) {
 		t.Fatalf("expected '%s' but got '%s'", expected, str)
 	}
 }
+
