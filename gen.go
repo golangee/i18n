@@ -57,7 +57,19 @@ func (t *packageTranslation) Emit() error {
 		file.Custom(Options{}, value.goEmitGetter())
 	}
 
-	fmt.Println(file.GoString())
+	dstFname := filepath.Join(t.pkg.Dir, "strings_gen.go")
+	f, err := os.Create(dstFname)
+	if err != nil {
+		return fmt.Errorf("cannot write to %s: %w", dstFname, err)
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+	err = file.Render(f)
+	if err != nil {
+		_ = os.Remove(dstFname)
+		return fmt.Errorf("generated invalid go code %s: %w", dstFname, err)
+	}
 	return nil
 }
 
@@ -161,11 +173,13 @@ func (p pluralValue) goEmitGetter() *Statement {
 		group.Id("quantity").Int()
 		emitParams(params, group)
 	}).String().BlockFunc(func(group *Group) {
-		group.Return(Id("r").Dot("QuantityText").ParamsFunc(func(group *Group) {
+		group.Id("str").Op(",").Id("err").Op(":=").Id("r").Dot("res").Dot("QuantityText").ParamsFunc(func(group *Group) {
 			group.Lit(p.ID())
 			group.Id("quantity")
 			emitCallParams(params, group)
-		}))
+		})
+
+		emitCheckReturn(p, group)
 	})
 }
 
@@ -231,15 +245,22 @@ func emitCallParams(params []PrintfFormatSpecifier, group *Group) {
 	}
 }
 
+func emitCheckReturn(s Value, group *Group) {
+	group.If(Id("err").Op("!=").Nil()).Block(Return(Qual("fmt", "Errorf").Call(Lit("MISS!" + s.ID() + ": %w").Op(",").Id("err")).Dot("Error").Call()))
+	group.Return(Id("str"))
+}
+
 func (s simpleValue) goEmitGetter() *Statement {
 	params := ParsePrintf(s.String)
 	return Func().Params(Id("r").Id("Resources")).Id(strcase.ToCamel(s.ID())).ParamsFunc(func(group *Group) {
 		emitParams(params, group)
 	}).String().BlockFunc(func(group *Group) {
-		group.Return(Id("r").Dot("Text").ParamsFunc(func(group *Group) {
+		group.Id("str").Op(",").Id("err").Op(":=").Id("r").Dot("res").Dot("Text").ParamsFunc(func(group *Group) {
 			group.Lit(s.ID())
 			emitCallParams(params, group)
-		}))
+		})
+		emitCheckReturn(s, group)
+
 	})
 }
 
@@ -254,7 +275,10 @@ func (s simpleValue) goEmitImportValue(group *Group) {
 
 func (a arrayValue) goEmitGetter() *Statement {
 	return Func().Params(Id("r").Id("Resources")).Id(strcase.ToCamel(a.ID())).Params().Op("[]").String().BlockFunc(func(group *Group) {
-		group.Return(Id("r").Dot("TextArray").Params(Lit(a.ID())))
+		group.Id("str").Op(",").Id("err").Op(":=").Id("r").Dot("res").Dot("TextArray").Params(Lit(a.ID()))
+
+		group.If(Id("err").Op("!=").Nil()).Block(Return(Op("[]string{").Qual("fmt", "Errorf").Call(Lit("MISS!" + a.ID() + ": %w").Op(",").Id("err")).Dot("Error").Call().Op("}")))
+		group.Return(Id("str"))
 	})
 }
 

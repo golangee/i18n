@@ -5,7 +5,7 @@ import (
 )
 
 func Test_goGenerator_Scan(t *testing.T) {
-	gen := NewGoGenerator(".")
+	gen := NewGoGenerator("./example")
 	err := gen.Scan()
 	if err != nil {
 		t.Fatal(err)
@@ -15,5 +15,8 @@ func Test_goGenerator_Scan(t *testing.T) {
 		t.Fatal("expected 1 translation")
 	}
 
-	gen.Emit()
+	err = gen.Emit()
+	if err != nil {
+		t.Fatal(err)
+	}
 }
