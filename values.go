@@ -24,7 +24,7 @@ type Value interface {
 	// Locale returns the CLDR language tag
 	Locale() string
 	goEmitImportValue(group *jen.Group)
-	goEmitGetter()*jen.Statement
+	goEmitGetter() *jen.Statement
 	exampleText() string
 
 	// implementation detail
@@ -61,6 +61,31 @@ func NewQuantityText(locale string, id string) PluralBuilder {
 		Id:     id,
 	}
 }
+
+// mapOf returns a map of zero,one,two,few,many,other strings with their according value, if the value is not empty
+func (p pluralValue) mapOf() map[string]string {
+	m := make(map[string]string)
+	if len(p.zero) > 0 {
+		m[zero] = p.zero
+	}
+	if len(p.one) > 0 {
+		m[one] = p.zero
+	}
+	if len(p.two) > 0 {
+		m[two] = p.zero
+	}
+	if len(p.few) > 0 {
+		m[few] = p.zero
+	}
+	if len(p.many) > 0 {
+		m[many] = p.zero
+	}
+	if len(p.other) > 0 {
+		m[other] = p.zero
+	}
+	return m
+}
+
 func (p pluralValue) Zero(text string) PluralBuilder {
 	p.zero = text
 	return p
@@ -237,4 +262,3 @@ func (a arrayValue) Text(args ...interface{}) (string, error) {
 func (a arrayValue) QuantityText(quantity int, args ...interface{}) (string, error) {
 	return a.Text(args...)
 }
-
