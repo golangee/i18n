@@ -45,17 +45,20 @@ func importAndroid(dst *Resources, src android.Resources) {
 	dst.mutex.Lock()
 	defer dst.mutex.Unlock()
 
+	locale := dst.tag.String()
 	for _, str := range src.Strings {
 		dst.values[str.Name] = simpleValue{
 			Id:     str.Name,
+			locale: locale,
 			String: android.Decode(str.Text),
 		}
 	}
 
 	for _, pl := range src.Plurals {
 		val := pluralValue{
-			Id: pl.Name,
-			tag:dst.tag,
+			Id:     pl.Name,
+			tag:    dst.tag,
+			locale: locale,
 		}
 
 		for _, item := range pl.Items {
@@ -88,6 +91,7 @@ func importAndroid(dst *Resources, src android.Resources) {
 
 		dst.values[arr.Name] = arrayValue{
 			Id:      arr.Name,
+			locale:  locale,
 			Strings: tmp,
 		}
 	}

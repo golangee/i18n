@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name" translatable="false">LeichteApp</string>
+    <string name="hello_world">Hallo Welt</string>
+    <string name="hello_x">Hello </string>
+    <string name="x_runs_around_Y_and_sings_z">%1$d runs around the %2$s and sings %3$s</string>
+    <plurals name="x_has_y_cats">
+        <item quantity="one">%1$s has %2$d cat</item>
+        <item quantity="other">the owner of %2$d cats is %1$s</item>
+    </plurals>
+    <string-array name="selector_details_array">
+        <item>first line %s</item>
+        <item>second line</item>
+        <item>third line</item>
+        <item>fourth line</item>
+    </string-array>
+
+    <plurals name="x_has_y_cats2">
+        <item quantity="one">%1$s has %2$d cat2</item>
+    </plurals>
+
+    <string-array name="selector_details_array2">
+        <item>a</item>
+        <item>b</item>
+        <item>c</item>
+    </string-array>
+
+    <string name="bad_0">\@ \? &lt; &amp; &apos; &quot; \" \'</string>
+    <string name="bad_1">"hallo '"</string>
+</resources>

@@ -34,7 +34,7 @@ type ErrFormatSpecifierCountMismatch struct {
 	Specs1 []PrintfFormatSpecifier
 }
 
-func (e ErrFormatSpecifierCountMismatch) Error() string {
+func (e *ErrFormatSpecifierCountMismatch) Error() string {
 	return fmt.Sprintf("printf argument count mismatch: %s.%s has %d arguments but %s.%s has %d",
 		e.Value0.Locale(), e.Value0.ID(), len(e.Specs0), e.Value1.Locale(), e.Value1.ID(), len(e.Specs1))
 }
@@ -61,7 +61,7 @@ type ErrUnexpectedAmountOfFormatSpecifiers struct {
 	Text     string
 }
 
-func (e ErrUnexpectedAmountOfFormatSpecifiers) Error() string {
+func (e *ErrUnexpectedAmountOfFormatSpecifiers) Error() string {
 	return fmt.Sprintf("The value %s.%s has %d format specifiers but expected are %d (%s)",
 		e.Value.Locale(), e.Value.ID(), e.Found, e.Expected, e.Text)
 }
@@ -74,7 +74,7 @@ type ErrVerbConflict struct {
 	Verb1  PrintfFormatSpecifier
 }
 
-func (e ErrVerbConflict) Error() string {
+func (e *ErrVerbConflict) Error() string {
 	return fmt.Sprintf("The value %s.%s has at index %d the verb '%s' but"+
 		" %s.%s has the verb '%s'",
 		e.Value0.Locale(), e.Value0.ID(), e.Verb0.Index, string(e.Verb0.Verb()),
@@ -97,8 +97,9 @@ func (e ErrOtherMissing) Error() string {
 //  * the order and type of verbs are equal
 func validate(resources []*Resources) []error {
 	var errs []error
-	for _, r0 := range resources {
-		for _, r1 := range resources {
+	for i0, r0 := range resources {
+		for i1 := i0 + 1; i1 < len(resources); i1++ {
+			r1 := resources[i1]
 			if r0 == r1 {
 				continue
 			}
@@ -121,10 +122,10 @@ func validate(resources []*Resources) []error {
 						var strErr error
 						switch t0 := (v0).(type) {
 						case simpleValue:
-							t1 := v0.(simpleValue)
+							t1 := v1.(simpleValue)
 							strErr = validatePrintf(t0.String, t1.String, -1)
 						case pluralValue:
-							t1 := v0.(pluralValue)
+							t1 := v1.(pluralValue)
 							if len(t0.other) == 0 {
 								strErr = ErrOtherMissing{Value: v0}
 								break
@@ -133,10 +134,19 @@ func validate(resources []*Resources) []error {
 								strErr = ErrOtherMissing{Value: v1}
 								break
 							}
-							//TODO
+
+						anyPlural:
+							for _, p0 := range t0.mapOf() {
+								for _, p1 := range t1.mapOf() {
+									strErr = validatePrintf(p0, p1, -1)
+									if strErr != nil {
+										break anyPlural
+									}
+								}
+							}
 
 						case arrayValue:
-							t1 := v0.(arrayValue)
+							t1 := v1.(arrayValue)
 							if len(t0.Strings) != len(t1.Strings) {
 								errs = append(errs, ErrArrayCountMismatch{
 									Value0: v0,
@@ -157,15 +167,16 @@ func validate(resources []*Resources) []error {
 						// we enrich the errors here instead of wrapping over, which is unnecessary complex
 						if strErr != nil {
 							switch e := (strErr).(type) {
-							case ErrFormatSpecifierCountMismatch:
+							case *ErrFormatSpecifierCountMismatch:
 								e.Value0 = v0
 								e.Value1 = v1
-							case ErrUnexpectedAmountOfFormatSpecifiers:
+							case *ErrUnexpectedAmountOfFormatSpecifiers:
 								e.Value = v0
-							case ErrVerbConflict:
+							case *ErrVerbConflict:
 								e.Value0 = v0
 								e.Value1 = v1
 							}
+							errs = append(errs, strErr)
 						}
 					}
 
@@ -186,14 +197,14 @@ func validatePrintf(str0, str1 string, expected int) error {
 	specs1 := ParsePrintf(str1)
 
 	if len(specs0) != len(specs1) {
-		return ErrFormatSpecifierCountMismatch{
+		return &ErrFormatSpecifierCountMismatch{
 			Specs0: specs0,
 			Specs1: specs1,
 		}
 	}
 
 	if expected >= 0 && len(specs0) != expected {
-		return ErrUnexpectedAmountOfFormatSpecifiers{
+		return &ErrUnexpectedAmountOfFormatSpecifiers{
 			Found:    len(specs0),
 			Expected: expected,
 			Text:     str0,
@@ -205,7 +216,7 @@ func validatePrintf(str0, str1 string, expected int) error {
 		spec1 := specs1[i]
 
 		if spec0.Verb() != spec1.Verb() {
-			return ErrVerbConflict{
+			return &ErrVerbConflict{
 				Verb0: spec0,
 				Verb1: spec1,
 			}

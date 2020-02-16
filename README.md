@@ -8,12 +8,12 @@ A library (ready) and a go (golang) generator (wip) which creates code based and
 - [x] Android xml support
 - [x] CLDR plural support
 - [x] CLDR language tag support
-- [x] support priority matching of wanted locales and available locales
+- [ ] support priority matching of wanted locales and available locales
 - [ ] dynamic fallthrough resources, if strings are missing
 - [ ] compile time checker for kind of value and placeholders
-- [ ] runtime checker for kind of value and placeholders
-- [ ] runtime checker for consistent placeholders across translations
-- [ ] type safe generator for accessor facade
+- [x] runtime checker for kind of value and placeholders
+- [x] runtime checker for consistent placeholders across translations
+- [x] type safe generator for accessor facade
 
 ## library usage
 

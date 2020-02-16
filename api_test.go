@@ -4,8 +4,14 @@ import (
 	"testing"
 )
 
+func setup() {
+	allResources = newLocalizations()
+}
+
 func TestImport(t *testing.T) {
-	err := ImportFile(AndroidImporter{}, "en-US", "android/strings_test.xml")
+	setup()
+
+	err := ImportFile(AndroidImporter{}, "en-US", "example/strings_test.xml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,5 +50,31 @@ func TestImport(t *testing.T) {
 	if str != expected {
 		t.Fatalf("expected '%s' but got '%s'", expected, str)
 	}
+
+	errs := Validate()
+	if len(errs) != 0 {
+		t.Fatal(errs)
+	}
 }
 
+func TestChecker(t *testing.T) {
+	setup()
+
+	err := ImportFile(AndroidImporter{}, "en-US", "example/strings_test.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = ImportFile(AndroidImporter{}, "de-DE", "example/strings-de-DE_broken.xml")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errs := Validate()
+	if len(errs) != 5 {
+		for _, err := range errs {
+			t.Error(err)
+		}
+		t.Fatal(len(errs), "fails")
+	}
+}

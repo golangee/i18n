@@ -53,3 +53,17 @@ func ImportValue(value Value) {
 func From(locales ...string) *Resources {
 	return allResources.Match(locales...)
 }
+
+// Validates checks the current state of the global localizations to see if everything is fine. If no error is returned,
+// you can be sure that at least every key is translated in every language and the printf directives are consistent
+// with each other.
+func Validate() []error {
+	allResources.translationsMutex.RLock()
+	defer allResources.translationsMutex.RUnlock()
+
+	tmp := make([]*Resources, 0, len(allResources.translations))
+	for _, res := range allResources.translations {
+		tmp = append(tmp, res)
+	}
+	return validate(tmp)
+}
