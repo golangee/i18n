@@ -3,6 +3,7 @@ package i18n
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 // ErrMissingValue contains an example value and the resources which is missing it
@@ -91,11 +92,25 @@ func (e ErrOtherMissing) Error() string {
 	return "the plural 'other' must not be empty of " + e.Value.Locale() + "." + e.Value.ID()
 }
 
+// ErrList is a list of errors
+type ErrList struct {
+	Errs []error
+}
+
+func (e ErrList) Error() string {
+	sb := &strings.Builder{}
+	for _, err := range e.Errs {
+		sb.WriteString(err.Error())
+		sb.WriteByte('\n')
+	}
+	return sb.String()
+}
+
 // validate checks the consistency of the given resources. The following checks are made
 //  * each resources have the same keys
 //  * each resources have the same type
 //  * the order and type of verbs are equal
-func validate(resources []*Resources) []error {
+func validate(resources []*Resources) error {
 	var errs []error
 	for i0, r0 := range resources {
 		for i1 := i0 + 1; i1 < len(resources); i1++ {
@@ -187,7 +202,10 @@ func validate(resources []*Resources) []error {
 			r1.mutex.RUnlock()
 		}
 	}
-	return errs
+	if len(errs) == 0 {
+		return nil
+	}
+	return ErrList{errs}
 }
 
 // validatePrintf validates str0 and str1 to be of equal golang printf format directives. If expected is not -1

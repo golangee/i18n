@@ -25,8 +25,8 @@ func Import(importer Importer, locale string, src io.Reader) error {
 	return nil
 }
 
-// ImportFile is a convenience method for Import.
-func ImportFile(importer Importer, locale string, fname string) error {
+// ImportFile is a convenience method for Import. It detects the locale from the file name
+func ImportFile(importer Importer, fname string) error {
 	file, err := os.Open(fname)
 	if err != nil {
 		return fmt.Errorf("cannot open file: %w", err)
@@ -36,10 +36,10 @@ func ImportFile(importer Importer, locale string, fname string) error {
 		_ = file.Close()
 	}()
 
-	return Import(importer, locale, file)
+	return Import(importer, guessLocaleFromFilename(fname), file)
 }
 
-// ImportValues adds or replaces any existing value
+// ImportValue adds or replaces any existing value
 func ImportValue(value Value) {
 	res := allResources.Configure(value.Locale())
 	value.updateTag(res.tag)
@@ -57,7 +57,7 @@ func From(locales ...string) *Resources {
 // Validates checks the current state of the global localizations to see if everything is fine. If no error is returned,
 // you can be sure that at least every key is translated in every language and the printf directives are consistent
 // with each other.
-func Validate() []error {
+func Validate() error {
 	allResources.translationsMutex.RLock()
 	defer allResources.translationsMutex.RUnlock()
 
@@ -66,4 +66,9 @@ func Validate() []error {
 		tmp = append(tmp, res)
 	}
 	return validate(tmp)
+}
+
+// TranslationPriority updates the resolution order and removes unwanted translations
+func TranslationPriority(locales ...string) {
+	allResources.SetTranslationPriority(locales)
 }

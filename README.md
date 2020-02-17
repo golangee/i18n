@@ -8,9 +8,9 @@ A library (ready) and a go (golang) generator (wip) which creates code based and
 - [x] Android xml support
 - [x] CLDR plural support
 - [x] CLDR language tag support
-- [ ] support priority matching of wanted locales and available locales
+- [x] support priority matching of wanted locales and available locales
 - [ ] dynamic fallthrough resources, if strings are missing
-- [ ] compile time checker for kind of value and placeholders
+- [x] compile time checker for kind of value and placeholders
 - [x] runtime checker for kind of value and placeholders
 - [x] runtime checker for consistent placeholders across translations
 - [x] type safe generator for accessor facade
@@ -292,6 +292,23 @@ func (r Resources) XRunsAroundYAndSingsZ(str0 string, str1 string, str2 string) 
 	}
 	return str
 }
+
+// FuncMap returns the named functions to be used with a template
+func (r Resources) FuncMap() map[string]interface{} {
+	m := make(map[string]interface{})
+	m["AppName"] = r.AppName
+	m["Bad0"] = r.Bad0
+	m["Bad1"] = r.Bad1
+	m["HelloWorld"] = r.HelloWorld
+	m["HelloX"] = r.HelloX
+	m["SelectorDetailsArray"] = r.SelectorDetailsArray
+	m["SelectorDetailsArray2"] = r.SelectorDetailsArray2
+	m["XHasYCats"] = r.XHasYCats
+	m["XHasYCats2"] = r.XHasYCats2
+	m["XRunsAroundYAndSingsZ"] = r.XRunsAroundYAndSingsZ
+	return m
+}
+
 
 ```
 

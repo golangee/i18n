@@ -32,6 +32,38 @@ func newLocalizations() *localizations {
 	}
 }
 
+// SetTranslationPriority updates the resolution order and removes unwanted translations
+func (l *localizations) SetTranslationPriority(order []string) {
+	l.translationsMutex.Lock()
+	defer l.translationsMutex.Unlock()
+
+	var wanted []language.Tag
+	for _, ordered := range order {
+		wantedTag := language.Make(ordered)
+		for _, existingTag := range l.translationPriority {
+			if existingTag == wantedTag {
+				wanted = append(wanted, existingTag)
+				break
+			}
+		}
+	}
+
+	// free memory for unwanted translations
+	for _, t := range l.translationPriority {
+		found := false
+		for _, w := range wanted {
+			if t == w {
+				found = true
+				break
+			}
+		}
+		if !found {
+			delete(l.translations, t)
+		}
+	}
+	l.translationPriority = wanted
+}
+
 // Locale parses the given unsafe locale into a valid BCP 47 tag.
 func (l *localizations) Locale(locale string) language.Tag {
 	l.parsedTagsMutex.RLock()

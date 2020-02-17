@@ -11,7 +11,7 @@ func setup() {
 func TestImport(t *testing.T) {
 	setup()
 
-	err := ImportFile(AndroidImporter{}, "en-US", "example/strings_test.xml")
+	err := ImportFile(AndroidImporter{},  "example/strings_test.xml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,11 @@ func TestImport(t *testing.T) {
 		t.Fatalf("expected '%s' but got '%s'", expected, str)
 	}
 
-	errs := Validate()
+	err = Validate()
+	var errs []error
+	if err != nil {
+		errs = err.(ErrList).Errs
+	}
 	if len(errs) != 0 {
 		t.Fatal(errs)
 	}
@@ -60,17 +64,21 @@ func TestImport(t *testing.T) {
 func TestChecker(t *testing.T) {
 	setup()
 
-	err := ImportFile(AndroidImporter{}, "en-US", "example/strings_test.xml")
+	err := ImportFile(AndroidImporter{},  "example/strings_test.xml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = ImportFile(AndroidImporter{}, "de-DE", "example/strings-de-DE_broken.xml")
+	err = ImportFile(AndroidImporter{},  "example/ignore-strings-de-DE_broken.xml")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	errs := Validate()
+	err = Validate()
+	var errs []error
+	if err != nil {
+		errs = err.(ErrList).Errs
+	}
 	if len(errs) != 5 {
 		for _, err := range errs {
 			t.Error(err)
