@@ -5,7 +5,7 @@ import (
 )
 
 func Test_goGenerator_Scan(t *testing.T) {
-	gen := NewGoGenerator("./example")
+	gen := newGoGenerator("./example")
 	err := gen.Scan()
 	if err != nil {
 		t.Fatal(err)

@@ -68,7 +68,27 @@ func Validate() error {
 	return validate(tmp)
 }
 
-// TranslationPriority updates the resolution order and removes unwanted translations
+// TranslationPriority updates the resolution order and removes unwanted translations. "und" is the undefined default
+// locale.
 func TranslationPriority(locales ...string) {
 	allResources.SetTranslationPriority(locales)
+}
+
+// Bundle (re)generates all localizations in the current working directory.
+func Bundle() error {
+	dir, err := os.Getwd()
+	if err != nil {
+		return fmt.Errorf("unable to get current working directory: %w", err)
+	}
+	gen := newGoGenerator(dir)
+	err = gen.Scan()
+	if err != nil {
+		return fmt.Errorf("cannot scan module: %w", err)
+	}
+
+	err = gen.Emit()
+	if err != nil {
+		return fmt.Errorf("unable to generate source code: %w", err)
+	}
+	return nil
 }

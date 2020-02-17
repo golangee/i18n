@@ -123,7 +123,7 @@ type goGenerator struct {
 	translations []*packageTranslation
 }
 
-func NewGoGenerator(dir string) *goGenerator {
+func newGoGenerator(dir string) *goGenerator {
 	return &goGenerator{dir: dir}
 }
 
