@@ -1,10 +1,12 @@
 artifactName = libI18n
 
+## which linter version to use?
+GOLANGCI_LINT_VERSION = v1.24.0
+
 buildDir = build
 TOOLSDIR = build/tools
 GO = go
 GOLANGCI_LINT = ${TOOLSDIR}/golangci-lint
-GOLINT = ${TOOLSDIR}/golint
 TMP_GOPATH = $(CURDIR)/${TOOLSDIR}/.gopath
 
 all: generate lint test build ## Runs lint, test and build
@@ -13,7 +15,6 @@ clean: ## Removes any temporary and output files
 	rm -rf ${buildDir}
 
 lint: ## Executes all linters
-	${GOLINT}
 	${GOLANGCI_LINT} run --enable-all
 
 test: ## Executes the tests
@@ -33,16 +34,13 @@ help: ## Shows this help
 generate: ## Executes go generate
 	${GO} generate
 
-setup: installGolint installGolangCi ## Installs golint and golangci-lint
+setup: installGolangCi ## Installs golint and golangci-lint
 	${GO} mod tidy
 
-installGolint:
-	GOPATH=${TMP_GOPATH} && go get -u golang.org/x/lint/golint && go install golang.org/x/lint/golint
-	cp ${TMP_GOPATH}/bin/golint ${TOOLSDIR}
 
 installGolangCi:
 	mkdir -p ${TOOLSDIR}
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLSDIR)/ v1.23.1
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLSDIR)/ $(GOLANGCI_LINT_VERSION)
 
 .DEFAULT_GOAL := help
 

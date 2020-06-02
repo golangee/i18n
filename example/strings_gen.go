@@ -14,29 +14,29 @@ func init() {
 	// from strings-de-DE.xml
 	tag = "de-DE"
 
-	i18n.ImportValue(i18n.NewTextArray(tag, "selector_details_array2", "a", "b", "c", "d"))
+	i18n.ImportValue(i18n.NewText(tag, "app_name", "LeichteApp"))
 	i18n.ImportValue(i18n.NewText(tag, "hello_world", "Hallo Welt"))
-	i18n.ImportValue(i18n.NewText(tag, "bad_0", "@ ? < & ' \" \" '"))
-	i18n.ImportValue(i18n.NewText(tag, "x_runs_around_Y_and_sings_z", "%[1]s runs around the %[2]s and sings %[3]s"))
 	i18n.ImportValue(i18n.NewText(tag, "bad_1", "hallo '"))
 	i18n.ImportValue(i18n.NewQuantityText(tag, "x_has_y_cats").One("%[1]s has %[2]d cat").Other("the owner of %[2]d cats is %[1]s").Other("the owner of %[2]d cats is %[1]s"))
 	i18n.ImportValue(i18n.NewQuantityText(tag, "x_has_y_cats2").One("%[1]s has %[2]d cat2").Other("the owner of %[2]d cats2 is %[1]s").Other("the owner of %[2]d cats2 is %[1]s"))
-	i18n.ImportValue(i18n.NewTextArray(tag, "selector_details_array", "first line", "second line", "third line", "fourth line"))
-	i18n.ImportValue(i18n.NewText(tag, "app_name", "LeichteApp"))
+	i18n.ImportValue(i18n.NewTextArray(tag, "selector_details_array2", "a", "b", "c", "d"))
 	i18n.ImportValue(i18n.NewText(tag, "hello_x", "Hello %s"))
+	i18n.ImportValue(i18n.NewText(tag, "x_runs_around_Y_and_sings_z", "%[1]s runs around the %[2]s and sings %[3]s"))
+	i18n.ImportValue(i18n.NewText(tag, "bad_0", "@ ? < & ' \" \" '"))
+	i18n.ImportValue(i18n.NewTextArray(tag, "selector_details_array", "first line", "second line", "third line", "fourth line"))
 
 	// from strings_test.xml
 	tag = "und"
 
-	i18n.ImportValue(i18n.NewText(tag, "hello_x", "Hello %s"))
+	i18n.ImportValue(i18n.NewText(tag, "x_runs_around_Y_and_sings_z", "%[1]s runs around the %[2]s and sings %[3]s"))
 	i18n.ImportValue(i18n.NewText(tag, "bad_1", "hello '"))
-	i18n.ImportValue(i18n.NewQuantityText(tag, "x_has_y_cats2").One("%[1]s has %[2]d cat2").Other("the owner of %[2]d cats2 is %[1]s").Other("the owner of %[2]d cats2 is %[1]s"))
+	i18n.ImportValue(i18n.NewQuantityText(tag, "x_has_y_cats").One("%[1]s has %[2]d cat").Other("the owner of %[2]d cats is %[1]s").Other("the owner of %[2]d cats is %[1]s"))
 	i18n.ImportValue(i18n.NewTextArray(tag, "selector_details_array2", "a", "b", "c", "d"))
 	i18n.ImportValue(i18n.NewText(tag, "app_name", "EasyApp"))
 	i18n.ImportValue(i18n.NewText(tag, "hello_world", "Hello World"))
-	i18n.ImportValue(i18n.NewText(tag, "x_runs_around_Y_and_sings_z", "%[1]s runs around the %[2]s and sings %[3]s"))
+	i18n.ImportValue(i18n.NewText(tag, "hello_x", "Hello %s"))
 	i18n.ImportValue(i18n.NewText(tag, "bad_0", "@ ? < & ' \" \" '"))
-	i18n.ImportValue(i18n.NewQuantityText(tag, "x_has_y_cats").One("%[1]s has %[2]d cat").Other("the owner of %[2]d cats is %[1]s").Other("the owner of %[2]d cats is %[1]s"))
+	i18n.ImportValue(i18n.NewQuantityText(tag, "x_has_y_cats2").One("%[1]s has %[2]d cat2").Other("the owner of %[2]d cats2 is %[1]s").Other("the owner of %[2]d cats2 is %[1]s"))
 	i18n.ImportValue(i18n.NewTextArray(tag, "selector_details_array", "first line", "second line", "third line", "fourth line"))
 
 }
