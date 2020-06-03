@@ -20,6 +20,7 @@ import (
 	"github.com/dave/jennifer/jen"
 	"golang.org/x/text/feature/plural"
 	"golang.org/x/text/language"
+	"log"
 )
 
 // A Value is a contract which is implemented by each kind of message Value, like simple, array or plural.
@@ -42,7 +43,7 @@ type Value interface {
 	exampleText() string
 
 	// implementation detail
-	updateTag(tag language.Tag)
+	updateTag(tag language.Tag) Value
 }
 
 type PluralBuilder interface {
@@ -134,8 +135,9 @@ func (p pluralValue) Locale() string {
 	return p.locale
 }
 
-func (p pluralValue) updateTag(tag language.Tag) {
+func (p pluralValue) updateTag(tag language.Tag) Value {
 	p.tag = tag
+	return p
 }
 
 func (p pluralValue) ID() string {
@@ -157,6 +159,7 @@ func (p pluralValue) QuantityText(quantity int, args ...interface{}) (string, er
 	// MatchPlural is over engineered: f and t are not used anyway and according to its test, v and w must be kept 0
 	// to just get the plural for a natural number
 	form := plural.Cardinal.MatchPlural(p.tag, quantity, 0, 0, 0, 0)
+	log.Println("quantity: ", form, p.tag)
 	switch form {
 	case plural.Zero:
 		return p.fallback(p.zero, args...)
@@ -179,6 +182,11 @@ func (p pluralValue) QuantityText(quantity int, args ...interface{}) (string, er
 func (p pluralValue) fallback(text string, args ...interface{}) (string, error) {
 	if len(text) == 0 {
 		return fmt.Sprintf(p.other, args...), nil
+	}
+
+	// TODO unclear if this is right, but it allows special cases without placeholders
+	if len(ParsePrintf(text)) == 0 {
+		return text, nil
 	}
 
 	return fmt.Sprintf(text, args...), nil
@@ -208,8 +216,8 @@ func (s simpleValue) Locale() string {
 	return s.locale
 }
 
-func (s simpleValue) updateTag(tag language.Tag) {
-
+func (s simpleValue) updateTag(tag language.Tag) Value {
+	return s
 }
 
 // StringArray returns the text in a single element array
@@ -243,8 +251,8 @@ func NewTextArray(locale string, id string, items ...string) Value {
 	}
 }
 
-func (a arrayValue) updateTag(tag language.Tag) {
-
+func (a arrayValue) updateTag(tag language.Tag) Value {
+	return a
 }
 
 func (a arrayValue) Locale() string {

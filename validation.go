@@ -22,11 +22,12 @@ import (
 
 // ErrMissingValue contains an example value and the resources which is missing it
 type ErrMissingValue struct {
-	Value Value
+	Value           Value
+	MissingInLocale string
 }
 
 func (e ErrMissingValue) Error() string {
-	return e.Value.Locale() + " is missing" + e.Value.ID()
+	return "the locale '" + e.Value.Locale() + "' has the extra value '" + e.Value.ID() + "' which is missing in '" + e.MissingInLocale + "'"
 }
 
 // ErrTypeMismatch contains two Values of two different values which have different types, which is not allowed.
@@ -139,7 +140,8 @@ func validate(resources []*Resources) error {
 				v1, exists := r1.values[k0]
 				if !exists {
 					errs = append(errs, ErrMissingValue{
-						Value: v0,
+						MissingInLocale: r1.tag.String(),
+						Value:           v0,
 					})
 				} else {
 					if reflect.TypeOf(v0) != reflect.TypeOf(v1) {

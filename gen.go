@@ -62,9 +62,11 @@ func (t *packageTranslation) Emit() error {
 			group.Comment("from " + filepath.Base(resFile.filename))
 			group.Id("tag").Op("=").Lit(resFile.values.tag.String())
 			group.Line()
-			for _, val := range resFile.values.values {
+			for _, k := range resFile.values.Keys() {
+				val := resFile.values.values[k]
 				val.goEmitImportValue(group)
 			}
+			group.Id("_").Op("=").Id("tag")
 		}
 		group.Line()
 
@@ -240,9 +242,6 @@ func (p pluralValue) goEmitImportValue(group *Group) {
 	}
 	if len(p.many) > 0 {
 		call = call.Dot("Many").Params(Lit(p.many))
-	}
-	if len(p.other) > 0 {
-		call = call.Dot("Other").Params(Lit(p.other))
 	}
 	if len(p.other) > 0 {
 		call = call.Dot("Other").Params(Lit(p.other))

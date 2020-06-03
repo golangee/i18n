@@ -17,14 +17,18 @@ package i18n
 import (
 	"fmt"
 	"github.com/golangee/i18n/internal"
+	"github.com/golangee/log"
 	"io"
 	"os"
+	"sort"
 )
 
 // ErrTextNotFound is the sentinel error for a named string which is not available
 var ErrTextNotFound = fmt.Errorf("string not found")
 
 var allResources = newLocalizations() //nolint: gochecknoglobals
+
+var logger = log.New("i18n")
 
 // Import takes the importer and locale and updates the according internal localization resources.
 // The order of import is relevant, because it determines the fallback matching logic. Import your default fallback
@@ -57,10 +61,13 @@ func ImportFile(importer Importer, fname string) error {
 // ImportValue adds or replaces any existing value
 func ImportValue(value Value) {
 	res := allResources.Configure(value.Locale())
-	value.updateTag(res.tag)
+	value = value.updateTag(res.tag)
 	res.mutex.Lock()
 	defer res.mutex.Unlock()
 
+	if _, has := res.values[value.ID()]; has {
+		logger.Warn("replacing already translated value", log.Obj("key", value.ID()))
+	}
 	res.values[value.ID()] = value
 }
 
@@ -87,6 +94,16 @@ func Validate() error {
 // locale.
 func TranslationPriority(locales ...string) {
 	allResources.SetTranslationPriority(locales)
+}
+
+// Locales returns all translated locales
+func Locales() []string {
+	var res []string
+	for k, _ := range allResources.translations {
+		res = append(res, k.String())
+	}
+	sort.Strings(res)
+	return res
 }
 
 // Bundle (re)generates all localizations in the current working directory.

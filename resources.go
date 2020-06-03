@@ -17,6 +17,7 @@ package i18n
 // nolint: goimports // the linter is broken
 import (
 	"golang.org/x/text/language"
+	"sort"
 	"sync"
 )
 
@@ -34,6 +35,25 @@ func newResources(tag language.Tag) *Resources {
 	}
 }
 
+// Keys returns all available text resource keys
+func (l *Resources) Keys() []string {
+	tmp := make([]string, 0, len(l.values))
+	for k, _ := range l.values {
+		tmp = append(tmp, k)
+	}
+
+	sort.Strings(tmp)
+	return tmp
+}
+
+// Values returns the value for the key or nil
+func (l *Resources) Value(key string) Value {
+	if v, ok := l.values[key]; ok {
+		return v
+	}
+
+	return nil
+}
 
 // TextArray returns a defensive copy of the according string array
 // or ErrTextNotFound.
