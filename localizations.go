@@ -142,7 +142,13 @@ func (l *localizations) Match(locales ...string) *Resources {
 
 	res := l.translations[bestTag]
 	if res == nil {
-		panic("assert: may not be nil")
+		if len(l.translations) == 0 {
+			panic("assert: may not be nil")
+		}
+
+		for _, r := range l.translations {
+			return r
+		}
 	}
 
 	return res
