@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"github.com/golangee/i18n/internal"
 	"github.com/golangee/log"
+	"github.com/golangee/log/ecs"
 	"io"
 	"os"
 	"sort"
@@ -28,7 +29,7 @@ var ErrTextNotFound = fmt.Errorf("string not found")
 
 var allResources = newLocalizations() //nolint: gochecknoglobals
 
-var logger = log.New("i18n")
+var logger = log.NewLogger(ecs.Log("i18n"))
 
 // Import takes the importer and locale and updates the according internal localization resources.
 // The order of import is relevant, because it determines the fallback matching logic. Import your default fallback
@@ -66,7 +67,7 @@ func ImportValue(value Value) {
 	defer res.mutex.Unlock()
 
 	if _, has := res.values[value.ID()]; has {
-		logger.Warn("replacing already translated value", log.Obj("key", value.ID()))
+		logger.Print(ecs.Warn(), ecs.Msg("replacing already translated value"), log.V("key", value.ID()))
 	}
 	res.values[value.ID()] = value
 }
