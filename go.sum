@@ -4,6 +4,8 @@ github.com/golangee/log v0.0.0-20200527135508-039216fb6009 h1:Oq7S5qEtW2onDpKpYO
 github.com/golangee/log v0.0.0-20200527135508-039216fb6009/go.mod h1:3bn9K3Qv+nn37RGViudYamNme1p/xf5olDp5Qehf6w8=
 github.com/golangee/log v0.0.0-20201120150808-72a0d21fc254 h1:ygz4ZwEo9T0rwxrdPENEAXAZkvL+l46/lB8nXe2ymuo=
 github.com/golangee/log v0.0.0-20201120150808-72a0d21fc254/go.mod h1:dUiMZFHdnlIsi6KOyAj+5jT+THo32aFtAoFMTRBlwuo=
+github.com/golangee/log v0.0.0-20201214095632-610ba2dec6e5 h1:UYE411gQQIorUoIvp9BqFIBCxTwnFUa6XBjN0kjwiqY=
+github.com/golangee/log v0.0.0-20201214095632-610ba2dec6e5/go.mod h1:dUiMZFHdnlIsi6KOyAj+5jT+THo32aFtAoFMTRBlwuo=
 github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 h1:VHgatEHNcBFEB7inlalqfNqw65aNkM1lGX2yt3NmbS8=
 github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334/go.mod h1:SK73tn/9oHe+/Y0h39VT4UCxmurVJkR5NA7kMEAOgSE=
 golang.org/x/text v0.3.2 h1:tW2bmiBqwgJj/UpqtC8EpXEZVYOwU0yG4iWbprSVAcs=

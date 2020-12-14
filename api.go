@@ -67,7 +67,7 @@ func ImportValue(value Value) {
 	defer res.mutex.Unlock()
 
 	if _, has := res.values[value.ID()]; has {
-		logger.Print(ecs.Warn(), ecs.Msg("replacing already translated value"), log.V("key", value.ID()))
+		logger.Println(ecs.Warn(), ecs.Msg("replacing already translated value"), log.V("key", value.ID()))
 	}
 	res.values[value.ID()] = value
 }
